@@ -97,13 +97,9 @@ func (m *Model) GetProbeTimeoutSeconds() int {
 	return timeoutSeconds
 }
 
-// GetWorkers returns the number of workers suggested to run when testing, taking windows heuristics into account, where parallel probing is flakier.
+// GetWorkers returns the number of workers suggested to run when testing.
 func (m *Model) GetWorkers() int {
-	numberOfWorkers := 3
-	if framework.NodeOSDistroIs("windows") {
-		numberOfWorkers = 1 // See https://github.com/kubernetes/kubernetes/pull/97690
-	}
-	return numberOfWorkers
+	return 3
 }
 
 // NewReachability instantiates a default-true reachability from the model's pods
@@ -171,7 +167,9 @@ func (ns *Namespace) Spec() *v1.Namespace {
 // LabelSelector returns the default labels that should be placed on a namespace
 // in order for it to be uniquely selectable by label selectors
 func (ns *Namespace) LabelSelector() map[string]string {
-	return map[string]string{"ns": ns.Name}
+	return map[string]string{
+		"ns": ns.Name,
+	}
 }
 
 // Pod is the abstract representation of what matters to network policy tests for

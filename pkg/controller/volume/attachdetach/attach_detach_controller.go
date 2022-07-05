@@ -54,7 +54,6 @@ import (
 	"k8s.io/kubernetes/pkg/controller/volume/attachdetach/statusupdater"
 	"k8s.io/kubernetes/pkg/controller/volume/attachdetach/util"
 	"k8s.io/kubernetes/pkg/controller/volume/common"
-	"k8s.io/kubernetes/pkg/features"
 	proxyutil "k8s.io/kubernetes/pkg/proxy/util"
 	"k8s.io/kubernetes/pkg/volume"
 	"k8s.io/kubernetes/pkg/volume/csi"
@@ -138,10 +137,8 @@ func NewAttachDetachController(
 		filteredDialOptions: filteredDialOptions,
 	}
 
-	if utilfeature.DefaultFeatureGate.Enabled(features.CSIMigration) {
-		adc.csiNodeLister = csiNodeInformer.Lister()
-		adc.csiNodeSynced = csiNodeInformer.Informer().HasSynced
-	}
+	adc.csiNodeLister = csiNodeInformer.Lister()
+	adc.csiNodeSynced = csiNodeInformer.Informer().HasSynced
 
 	adc.csiDriverLister = csiDriverInformer.Lister()
 	adc.csiDriversSynced = csiDriverInformer.Informer().HasSynced
@@ -166,7 +163,6 @@ func NewAttachDetachController(
 			kubeClient,
 			&adc.volumePluginMgr,
 			recorder,
-			false, // flag for experimental binary check for volume mount
 			blkutil))
 	adc.nodeStatusUpdater = statusupdater.NewNodeStatusUpdater(
 		kubeClient, nodeInformer.Lister(), adc.actualStateOfWorld)
@@ -181,6 +177,7 @@ func NewAttachDetachController(
 		adc.actualStateOfWorld,
 		adc.attacherDetacher,
 		adc.nodeStatusUpdater,
+		adc.nodeLister,
 		recorder)
 
 	csiTranslator := csitrans.New()
